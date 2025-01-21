@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://r3mhbyqvrwvu"]
+
+[ext_resource type="Material" uid="uid://x613vgq3012i" path="res://Assets/Materials/BaseSpaceMat.tres" id="1_pbafa"]
+[ext_resource type="Script" path="res://Scripts/Space.gd" id="2_xpenf"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_oxbor"]
+resource_local_to_scene = true
+material = ExtResource("1_pbafa")
+height = 0.1
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_4tmql"]
+height = 0.0888144
+radius = 0.500829
+
+[node name="Space" type="MeshInstance3D"]
+mesh = SubResource("CylinderMesh_oxbor")
+script = ExtResource("2_xpenf")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("CylinderShape3D_4tmql")
+
+[connection signal="input_event" from="StaticBody3D" to="." method="_on_static_body_3d_input_event"]
+[connection signal="mouse_entered" from="StaticBody3D" to="." method="_on_static_body_3d_mouse_entered"]
+[connection signal="mouse_exited" from="StaticBody3D" to="." method="_on_static_body_3d_mouse_exited"]

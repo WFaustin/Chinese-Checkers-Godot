@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3 uid="uid://c01xv5q5i75j6"]
+
+[ext_resource type="Script" path="res://Scripts/GameSetupAndRules.gd" id="1_007ad"]
+[ext_resource type="Script" path="res://Scripts/PopulateSpaces.gd" id="1_ad772"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jerjy"]
+albedo_color = Color(1, 0.603922, 0.341176, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_xsfw1"]
+material = SubResource("StandardMaterial3D_jerjy")
+top_radius = 18.0
+bottom_radius = 18.0
+height = 1.0
+
+[node name="Board" type="Node3D"]
+script = ExtResource("1_007ad")
+num_players = null
+
+[node name="Circle Board" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_xsfw1")
+
+[node name="Spaces Array" type="Node3D" parent="Circle Board"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+script = ExtResource("1_ad772")

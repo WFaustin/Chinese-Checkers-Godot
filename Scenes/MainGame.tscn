@@ -1,0 +1,30 @@
+[gd_scene load_steps=5 format=3 uid="uid://c66h2hh6ftfog"]
+
+[ext_resource type="PackedScene" uid="uid://c01xv5q5i75j6" path="res://Assets/Board.tscn" id="1_hpl6y"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_fmwuo"]
+sky_horizon_color = Color(0.651152, 0.654676, 0.653186, 1)
+ground_bottom_color = Color(0.219608, 0.164706, 0.0627451, 1)
+ground_horizon_color = Color(0.651152, 0.654676, 0.653186, 1)
+
+[sub_resource type="Sky" id="Sky_032xr"]
+sky_material = SubResource("ProceduralSkyMaterial_fmwuo")
+
+[sub_resource type="Environment" id="Environment_g1atr"]
+background_mode = 2
+sky = SubResource("Sky_032xr")
+tonemap_mode = 2
+
+[node name="Game Scene" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_g1atr")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1.19249e-08, 1, 0, -1, 1.19249e-08, 0, 25, 0)
+current = true
+
+[node name="Camera3D2" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.396972, 0.917831, 0, -0.917831, 0.396972, 0, 17.4586, 14.3242)
+
+[node name="Board" parent="." instance=ExtResource("1_hpl6y")]
