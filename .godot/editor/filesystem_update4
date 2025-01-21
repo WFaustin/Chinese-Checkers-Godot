@@ -1,11 +1,6 @@
-res://Assets/Board.tscn
-res://Scripts/GameSetupAndRules.gd
-res://Assets/Piece.tscn
-res://Assets/Space.tscn
 res://Scenes/MainGame.tscn
-res://Scripts/Space.gd
 res://Assets/Materials/Player2Mat.tres
-res://Player.gd
 res://Assets/Player.tscn
 res://Scripts/Player.gd
+res://Assets/Piece.tscn
 res://Assets/Piece.gd

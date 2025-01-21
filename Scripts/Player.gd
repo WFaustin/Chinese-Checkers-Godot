@@ -1,4 +1,4 @@
-class_name Player
+
 extends Node3D
 
 var id : int
@@ -15,7 +15,7 @@ func _ready():
 func random_id():
 	pass
 
-func player_info_instantiation(number, id, piece_mat) -> Player:
+func player_info_instantiation(number, id, piece_mat):
 	self.id = id
 	self.number = number
 	self.piece_mat = piece_mat

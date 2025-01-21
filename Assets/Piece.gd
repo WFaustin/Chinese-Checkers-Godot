@@ -12,6 +12,7 @@ func piece_identity(_player, _mat) -> Piece:
 	self.player = _player
 	self.mat = _mat
 	self.mesh.surface_set_material(0, mat)
+	get_node("Piece_Head").mesh.surface_set_material(0, mat)
 	return self
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
