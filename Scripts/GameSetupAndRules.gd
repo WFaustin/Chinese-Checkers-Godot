@@ -25,6 +25,8 @@ func _ready():
 	if num_players == 0:
 		num_players = 2
 	create_players()
+	choose_turn_order()
+	start_game()
 	pass # Replace with function body.
 
 func connect_click_signal():
@@ -32,8 +34,36 @@ func connect_click_signal():
 		for space in spaces:
 			space.connect("ClickSignal", select_player_space)
 
+func choose_turn_order():
+	var rng = RandomNumberGenerator.new()
+	var dup_players = players.duplicate()
+	while dup_players.size() > 0:
+		var chosen_player_num = rng.randi_range(0, dup_players.size()-1)
+		player_order.append(dup_players[chosen_player_num])
+		dup_players.pop_at(chosen_player_num)
+	moving_player = player_order[0]
+		
+func cycle_players():
+	var check = player_order.find(moving_player)
+	if check < player_order.size() - 1:
+		moving_player = player_order[check+1]
+	else:
+		moving_player = player_order[0]
+
+
 func test_game():
 	pass
+	
+func start_game():
+	for spaces in pieces_array:
+		for space in spaces:
+			space.check_has_piece()
+	turn()
+	pass
+
+func turn():
+	print(moving_player)
+	#Should be wincon check here
 
 func create_players():
 	for num in range(0, num_players):
@@ -44,21 +74,23 @@ func create_players():
 		new_player.player_info_instantiation(number, id, mat)
 		players.append(new_player)
 		get_node("PlayerNodeHolder").add_child(new_player)
-		for i in players:
-			create_pieces(i)
+		create_pieces(new_player)
+	#for i in players:
+		#create_pieces(i)
 
 
 func create_pieces(player):
 	var player_piece_array = []
 	propogate_spaces(player)
 	for i in starting_points:
-		if str(player.number) in i.name:
+		if str(player.number) in str(i.name).substr(0, 15):
 			var new_piece = piece_instance.instantiate()
+			i.add_child(new_piece)
+			new_piece.name += " " + player.name + " " + str(i.name).substr(16)
+			player_piece_array.append(new_piece)
 			new_piece.global_position = i.global_position
 			new_piece.global_position.y += 1.5
 			new_piece.piece_identity(player, player.piece_mat)
-			player_piece_array.append(new_piece)
-			i.add_child(new_piece)
 	player.set_pieces(player_piece_array)
 	#FIX PIECES NOT SHOWING UP WITH RIGHT MATERIAL
 	pass	
@@ -94,14 +126,14 @@ func propogate_spaces(player):
 func select_player_space(is_filled, space):
 	
 	if selected_space == null and is_filled != true:
-		space.fill_space()
+		space.select_space()
 		selected_space = space
 	elif selected_space != null and is_filled != true:
-		selected_space.fill_space()
-		space.fill_space()
+		selected_space.select_space()
+		space.select_space()
 		selected_space = space
 	elif selected_space == space:
-		space.fill_space()
+		space.select_space()
 		selected_space = null
 	else:
 		print("Not a valid click")

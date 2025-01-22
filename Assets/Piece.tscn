@@ -5,8 +5,12 @@
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lrbgs"]
 albedo_color = Color(0.152941, 0.509804, 0.47451, 0.92549)
 metallic = 1.0
+emission_enabled = true
+emission = Color(0.341176, 0.341176, 0.341176, 1)
+emission_energy_multiplier = 0.0
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_ak6ms"]
+resource_local_to_scene = true
 material = SubResource("StandardMaterial3D_lrbgs")
 top_radius = 0.0
 bottom_radius = 0.2
@@ -17,6 +21,7 @@ height = 0.91973
 radius = 0.331628
 
 [sub_resource type="SphereMesh" id="SphereMesh_kby6e"]
+resource_local_to_scene = true
 material = SubResource("StandardMaterial3D_lrbgs")
 radius = 0.25
 height = 0.5
@@ -34,3 +39,7 @@ shape = SubResource("CylinderShape3D_ag08i")
 [node name="Piece_Head" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.424298, 0)
 mesh = SubResource("SphereMesh_kby6e")
+
+[connection signal="input_event" from="StaticBody3D" to="." method="_on_static_body_3d_input_event"]
+[connection signal="mouse_entered" from="StaticBody3D" to="." method="_on_static_body_3d_mouse_entered"]
+[connection signal="mouse_exited" from="StaticBody3D" to="." method="_on_static_body_3d_mouse_exited"]
