@@ -33,6 +33,11 @@ func connect_click_signal():
 	for spaces in pieces_array:
 		for space in spaces:
 			space.connect("ClickSignal", select_player_space)
+			
+			
+func connect_click_signal_piece(piece):
+	piece.connect("ClickSignal", select_player_piece)
+	pass
 
 func choose_turn_order():
 	var rng = RandomNumberGenerator.new()
@@ -91,6 +96,7 @@ func create_pieces(player):
 			new_piece.global_position = i.global_position
 			new_piece.global_position.y += 1.5
 			new_piece.piece_identity(player, player.piece_mat)
+			connect_click_signal_piece(new_piece)
 	player.set_pieces(player_piece_array)
 	#FIX PIECES NOT SHOWING UP WITH RIGHT MATERIAL
 	pass	
@@ -121,10 +127,32 @@ func propogate_spaces(player):
 				break
 	pass
 	
-
+func select_player_piece(piece):
+	if selected_piece == null:
+		piece.select_piece()
+		selected_piece = piece
+		piece.space_parent.select_space()
+		if selected_space == null:
+			selected_space = piece.space_parent
+		else:
+			selected_space.select_space()
+			selected_space = piece.space_parent
+	elif selected_piece != null and piece != selected_piece:
+		piece.select_piece()
+		selected_piece.select_piece()
+		selected_piece = piece
+		selected_space.select_space()
+		#check here for errors
+		piece.space_parent.select_space()
+		selected_piece = piece
+	elif selected_piece == piece:
+		piece.select_piece()
+		selected_piece == null
+		piece.space_parent.select_space()
+		selected_space = null
+	pass
 	
 func select_player_space(is_filled, space):
-	
 	if selected_space == null and is_filled != true:
 		space.select_space()
 		selected_space = space
@@ -137,7 +165,9 @@ func select_player_space(is_filled, space):
 		selected_space = null
 	else:
 		print("Not a valid click")
-		
+	if selected_piece != null:
+		selected_piece.select_piece()
+		selected_piece = null
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

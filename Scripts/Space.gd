@@ -43,25 +43,25 @@ func _on_static_body_3d_mouse_entered():
 func select_space():
 	if !is_selected:
 		self.mesh.surface_set_material(0, selectedmat)
-		occupying_piece = piece.instantiate()
-		add_child(occupying_piece)
-		print(occupying_piece)
-		occupying_piece.global_position = self.global_position
+		#occupying_piece = piece.instantiate()
+		#add_child(occupying_piece)
+		#print(occupying_piece)
+		#occupying_piece.global_position = self.global_position
 		#occupying_piece.position.y += 1.5
-		occupying_piece.position.y += 3
+		#occupying_piece.position.y += 3
 		print(self.position)
-		print(occupying_piece.position)
+		#print(occupying_piece.position)
 	else:
 		self.mesh.surface_set_material(0, basemat)
-		if occupying_piece != null:
-			occupying_piece.queue_free()
+		#if occupying_piece != null:
+		#	occupying_piece.queue_free()
 	is_selected = !is_selected
 	print(neighbors)
 		
 
 func _on_static_body_3d_mouse_exited():
 	if !is_selected:
-		self.mesh.surface_set_material(0, basemat)
+		check_has_piece()
 		#self.mesh.surface_get_material(0).albedo_color = original_color
 	pass # Replace with function body.
 
