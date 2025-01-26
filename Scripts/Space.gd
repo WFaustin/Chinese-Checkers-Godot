@@ -3,12 +3,14 @@ var basemat = preload("res://Assets/Materials/BaseSpaceMat.tres")
 var hovermat = preload("res://Assets/Materials/HoverSpaceMat.tres")
 var selectedmat = preload("res://Assets/Materials/SelectedSpaceMat.tres")
 var filledmat = preload("res://Assets/Materials/FilledSpaceMat.tres")
+var jumpablemat = preload("res://Assets/Materials/JumpableSpaceMat.tres")
 var piece = preload("res://Assets/Piece.tscn")
 signal ClickSignal(space_filled: bool, space_obj)
 @export var toggle_on_hover: Color
 var original_color = mesh.surface_get_material(0).albedo_color
 @export var is_filled : bool = false
 @export var is_selected : bool = false
+var is_jumpable : bool = false
 @export var occupying_piece : Node
 @export var neighbors = []
 var bottom_left_neighbor = null
@@ -31,6 +33,12 @@ func _process(delta):
 	pass
 
 
+func toggle_jumpable_color():
+	if is_jumpable:
+		self.mesh.surface_set_material(0, jumpablemat)
+	else:
+		check_has_piece()
+
 func check_has_piece():
 	if get_child_count() > 1 and "Piece" in get_children()[1].name:
 		is_filled = true
@@ -39,7 +47,11 @@ func check_has_piece():
 	else:
 		is_filled = false
 		occupying_piece = null
-		self.mesh.surface_set_material(0, basemat)
+		#Monitor here
+		if !is_selected:
+			self.mesh.surface_set_material(0, basemat)
+		else:
+			self.mesh.surface_set_material(0, selectedmat)
 	pass
 
 

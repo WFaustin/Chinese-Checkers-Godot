@@ -25,11 +25,12 @@ func _ready():
 	pieces_array = spaces_ref.pieces_array
 	connect_click_signal()
 	if num_players < 3:
-		num_players = 3
+		num_players = 6
 	create_players()
 	choose_turn_order()
 	create_goal_spaces()
 	start_game()
+	#test_game()
 	pass # Replace with function body.
 
 func connect_click_signal():
@@ -52,14 +53,30 @@ func choose_turn_order():
 	moving_player = player_order[0]
 		
 func cycle_players():
+	check_win()
 	var check = player_order.find(moving_player)
 	if check < player_order.size() - 1:
 		moving_player = player_order[check+1]
 	else:
 		moving_player = player_order[0]
+	turn()
 
 
 func test_game():
+	if players.size() > 2:
+		for i in range(0, players[2].goal_points.size()):
+			#Remove piece from space
+			players[2].player_pieces[i].space_parent.remove_child(players[2].player_pieces[i])
+			#Check original space parent to make sure the piece is gone
+			players[2].player_pieces[i].space_parent.check_has_piece()
+			#Unhook the space_parent from the piece
+			players[2].player_pieces[i].space_parent = null
+			#Get the goal space from the loop and add the piece to it. 
+			players[2].goal_points[i].add_child(players[2].player_pieces[i])
+			players[2].player_pieces[i].space_parent = players[2].goal_points[i]
+			players[2].player_pieces[i].space_parent.check_has_piece()
+			players[2].player_pieces[i].global_position = players[2].player_pieces[i].space_parent.global_position
+			players[2].player_pieces[i].global_position.y += 1.5
 	pass
 	
 func start_game():
@@ -70,7 +87,9 @@ func start_game():
 	pass
 
 func turn():
-	print(moving_player)
+	print(moving_player.name + "'s turn!")
+
+		
 	#Should be wincon check here
 
 #Do check win check at later point
@@ -80,6 +99,7 @@ func check_win():
 			return false
 		elif i.occupying_piece.player != moving_player:
 			return false
+	print(moving_player.name + " wins!")
 	return true
 
 func create_players():
@@ -139,6 +159,12 @@ func choose_mat_for_player(num):
 			return preload("res://Assets/Materials/Player2Mat.tres")
 		3:
 			return preload("res://Assets/Materials/Player3Mat.tres")
+		4:
+			return preload("res://Assets/Materials/Player4Mat.tres")
+		5:
+			return preload("res://Assets/Materials/Player5Mat.tres")
+		6:
+			return preload("res://Assets/Materials/Player6Mat.tres")
 		-1:
 			return null
 	pass
@@ -171,9 +197,11 @@ func select_player_piece(piece):
 			else:
 				selected_space.select_space()
 				selected_space = piece.space_parent
+			print(piece.name + " has been selected.")
 		elif selected_piece != null and piece != selected_piece:
 			selected_piece.select_piece() 
 			selected_space.select_space()
+			print(piece.name + " has been selected. " + selected_piece.name + " has been deselected.")
 			selected_piece = null
 			selected_space = null
 			piece.select_piece()
@@ -185,6 +213,7 @@ func select_player_piece(piece):
 			selected_piece = null
 			piece.space_parent.select_space()
 			selected_space = null
+			print(piece.name + " has been deselected.")
 	elif piece.player != moving_player:
 		print("Please select one of your own pieces. That piece is a piece from: " + piece.player.name)
 	pass
@@ -234,13 +263,16 @@ func select_player_space(is_filled, space):
 		if selected_space == null and is_filled != true:
 			space.select_space()
 			selected_space = space
+			print(space.name + " has been selected.")
 		elif selected_space != null and is_filled != true:
 			selected_space.select_space()
 			space.select_space()
+			print(space.name + " has been selected. " + selected_space.name + " has been deselected.")
 			selected_space = space
 		elif selected_space == space:
 			space.select_space()
 			selected_space = null
+			print(space.name + " has been deselected.")
 		else:
 			print("Not a valid click")
 	#if selected_piece != null:
@@ -287,6 +319,7 @@ func deselect_all():
 	
 func move_piece(space):
 	#refactor select_piece and select_space along with sensing player turn to not highlight other piece players to use this. 
+	jump_history = []
 	if selected_piece.player == moving_player and space in selected_piece.space_parent.neighbors and !space.is_filled:
 		selected_piece.space_parent.is_filled = false
 		selected_piece.space_parent.remove_child(selected_piece)
@@ -298,7 +331,9 @@ func move_piece(space):
 		selected_piece.global_position.y += 1.5
 		selected_piece.space_parent = space
 		space.is_filled = true
-		cycle_players()
+		space.check_has_piece()
+		if !check_win():
+			cycle_players()
 	elif selected_piece.player == moving_player and check_if_space_one_removed_proper(space) and !space.is_filled:
 		print("HERE IS SKIPPING PIECES")
 		selected_piece.space_parent.is_filled = false
@@ -311,7 +346,9 @@ func move_piece(space):
 		selected_piece.global_position.y += 1.5
 		selected_piece.space_parent = space
 		space.is_filled = true
-		cycle_players()
+		space.check_has_piece()
+		if !check_win():
+			cycle_players()
 	else:
 		print("Not a valid move, deselecting all pieces")
 	deselect_all()
@@ -345,6 +382,14 @@ func check_if_space_one_removed_proper(space):
 			return false
 	pass
 
+
+func continued_jump_move():
+	#for i in selected_piece.space_parent.neighbors:
+	#	if i 
+	pass
+
+func find_other_non_dups_to_jump_to():
+	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
