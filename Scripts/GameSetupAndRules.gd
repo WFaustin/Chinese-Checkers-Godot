@@ -11,9 +11,11 @@ var pieces_array = []
 var player_order = []
 var selected_piece
 var selected_space
+var jump_history = []
 var player_instance = preload("res://Assets/Player.tscn")
 var piece_instance = preload("res://Assets/Piece.tscn")
 var rng = RandomNumberGenerator.new()
+
 
 #var def_space = preload("res://Assets/Space.tscn")
 # Called when the node enters the scene tree for the first time.
@@ -22,10 +24,11 @@ func _ready():
 	spaces_ref.create_rows()
 	pieces_array = spaces_ref.pieces_array
 	connect_click_signal()
-	if num_players == 0:
-		num_players = 2
+	if num_players < 3:
+		num_players = 3
 	create_players()
 	choose_turn_order()
+	create_goal_spaces()
 	start_game()
 	pass # Replace with function body.
 
@@ -70,6 +73,15 @@ func turn():
 	print(moving_player)
 	#Should be wincon check here
 
+#Do check win check at later point
+func check_win():
+	for i in moving_player.goal_points:
+		if !i.is_filled:
+			return false
+		elif i.occupying_piece.player != moving_player:
+			return false
+	return true
+
 func create_players():
 	for num in range(0, num_players):
 		var new_player = player_instance.instantiate()
@@ -83,12 +95,29 @@ func create_players():
 	#for i in players:
 		#create_pieces(i)
 
+func create_goal_spaces():
+	if players.size() % 2 == 0:
+		print("even")
+		for i in range(0, players.size(), 2):
+			players[i].goal_points = players[i+1].starting_points
+			players[i+1].goal_points = players[i].starting_points
+	else:
+		for i in range(0, players.size()-1, 2):
+			players[i].goal_points = players[i+1].starting_points
+			players[i+1].goal_points = players[i].starting_points
+		var searchword = "Starting Spot"
+		for i in pieces_array:
+			for j in i:
+				if searchword + " " + str(players[players.size()-1].number + 1) in j.name:
+					players[players.size()-1].goal_points.append(j)
+		print("odd")
 
 func create_pieces(player):
 	var player_piece_array = []
 	propogate_spaces(player)
 	for i in starting_points:
 		if str(player.number) in str(i.name).substr(0, 15):
+			player.starting_points.append(i)
 			var new_piece = piece_instance.instantiate()
 			i.add_child(new_piece)
 			new_piece.name += " " + player.name + " " + str(i.name).substr(16)
@@ -96,6 +125,7 @@ func create_pieces(player):
 			new_piece.global_position = i.global_position
 			new_piece.global_position.y += 1.5
 			new_piece.piece_identity(player, player.piece_mat)
+			i.occupying_piece = new_piece
 			connect_click_signal_piece(new_piece)
 	player.set_pieces(player_piece_array)
 	#FIX PIECES NOT SHOWING UP WITH RIGHT MATERIAL
@@ -107,6 +137,8 @@ func choose_mat_for_player(num):
 			return preload("res://Assets/Materials/Player1Mat.tres")
 		2:
 			return preload("res://Assets/Materials/Player2Mat.tres")
+		3:
+			return preload("res://Assets/Materials/Player3Mat.tres")
 		-1:
 			return null
 	pass
@@ -126,48 +158,193 @@ func propogate_spaces(player):
 				counter = 0
 				break
 	pass
-	
+
+
 func select_player_piece(piece):
-	if selected_piece == null:
-		piece.select_piece()
-		selected_piece = piece
-		piece.space_parent.select_space()
-		if selected_space == null:
-			selected_space = piece.space_parent
-		else:
+	if piece.player == moving_player:
+		if selected_piece == null:
+			piece.select_piece()
+			selected_piece = piece
+			piece.space_parent.select_space()
+			if selected_space == null:
+				selected_space = piece.space_parent
+			else:
+				selected_space.select_space()
+				selected_space = piece.space_parent
+		elif selected_piece != null and piece != selected_piece:
+			selected_piece.select_piece() 
 			selected_space.select_space()
+			selected_piece = null
+			selected_space = null
+			piece.select_piece()
+			selected_piece = piece
+			piece.space_parent.select_space()
 			selected_space = piece.space_parent
-	elif selected_piece != null and piece != selected_piece:
-		piece.select_piece()
-		selected_piece.select_piece()
-		selected_piece = piece
-		selected_space.select_space()
-		#check here for errors
-		piece.space_parent.select_space()
-		selected_piece = piece
-	elif selected_piece == piece:
-		piece.select_piece()
-		selected_piece == null
-		piece.space_parent.select_space()
+		elif selected_piece == piece:
+			piece.select_piece()
+			selected_piece = null
+			piece.space_parent.select_space()
+			selected_space = null
+	elif piece.player != moving_player:
+		print("Please select one of your own pieces. That piece is a piece from: " + piece.player.name)
+	pass
+
+	
+#func select_player_piece(piece): #Original function, does not intend to use move logic
+#	if piece.player == moving_player:
+#		if selected_piece == null:
+#			piece.select_piece()
+#			selected_piece = piece
+#			#print(piece.name)
+#			piece.space_parent.select_space()
+#			#print(piece.space_parent.name)
+#			if selected_space == null:
+#				selected_space = piece.space_parent
+#			else:
+#				selected_space.select_space()
+#				selected_space = piece.space_parent
+#		elif selected_piece != null and piece != selected_piece:
+#			selected_piece.select_piece()
+#			selected_space.select_space()
+#			selected_piece = null
+#			selected_space = null
+#			piece.select_piece()
+#			selected_piece = piece
+#			piece.space_parent.select_space()
+#			selected_space = piece.space_parent
+#		elif selected_piece == piece:
+#			piece.select_piece()
+#			selected_piece = null
+#			piece.space_parent.select_space()
+#			selected_space = null
+#	elif piece.player != moving_player:
+#		print("Please select one of your own pieces. That piece is a piece from: " + piece.player.name)
+#	pass
+	
+	
+func select_player_space(is_filled, space):
+	if selected_piece != null:
+		if is_filled != true:
+			move_piece(space)
+			print("Move Piece")
+			return
+		else:
+			print("This space is filled currently. Please try again with another space.")
+	else:
+		if selected_space == null and is_filled != true:
+			space.select_space()
+			selected_space = space
+		elif selected_space != null and is_filled != true:
+			selected_space.select_space()
+			space.select_space()
+			selected_space = space
+		elif selected_space == space:
+			space.select_space()
+			selected_space = null
+		else:
+			print("Not a valid click")
+	#if selected_piece != null:
+	#	selected_piece.select_piece()
+	#	if selected_piece.space_parent.is_selected:
+	#		selected_piece.space_parent.select_space()
+	#	selected_piece = null
+
+
+	
+#func select_player_space(is_filled, space): #Original function, does not plan on using move_piece function
+#	if selected_space == null and is_filled != true:
+#		space.select_space()
+#		selected_space = space
+#	elif selected_space != null and is_filled != true:
+#		selected_space.select_space()
+#		space.select_space()
+#		selected_space = space
+#	elif selected_space == space:
+#		space.select_space()
+#		selected_space = null
+#	else:
+#		print("Not a valid click")
+#	if selected_piece != null:
+#		selected_piece.select_piece()
+#		if selected_piece.space_parent.is_selected:
+#			selected_piece.space_parent.select_space()
+#		selected_piece = null
+
+
+func deselect_all():
+	if selected_piece != null:
+		if selected_piece.is_selected:
+			selected_piece.select_piece()
+		if selected_piece.space_parent.is_selected:
+			selected_piece.space_parent.select_space()
+		selected_piece = null
+	if selected_space != null:
+		if selected_space.is_selected:
+			selected_space.select_space()
 		selected_space = null
 	pass
 	
-func select_player_space(is_filled, space):
-	if selected_space == null and is_filled != true:
-		space.select_space()
-		selected_space = space
-	elif selected_space != null and is_filled != true:
-		selected_space.select_space()
-		space.select_space()
-		selected_space = space
-	elif selected_space == space:
-		space.select_space()
+	
+func move_piece(space):
+	#refactor select_piece and select_space along with sensing player turn to not highlight other piece players to use this. 
+	if selected_piece.player == moving_player and space in selected_piece.space_parent.neighbors and !space.is_filled:
+		selected_piece.space_parent.is_filled = false
+		selected_piece.space_parent.remove_child(selected_piece)
+		selected_piece.space_parent.select_space()
+		selected_piece.space_parent = null
 		selected_space = null
+		space.add_child(selected_piece)
+		selected_piece.global_position = space.global_position
+		selected_piece.global_position.y += 1.5
+		selected_piece.space_parent = space
+		space.is_filled = true
+		cycle_players()
+	elif selected_piece.player == moving_player and check_if_space_one_removed_proper(space) and !space.is_filled:
+		print("HERE IS SKIPPING PIECES")
+		selected_piece.space_parent.is_filled = false
+		selected_piece.space_parent.remove_child(selected_piece)
+		selected_piece.space_parent.select_space()
+		selected_piece.space_parent = null
+		selected_space = null
+		space.add_child(selected_piece)
+		selected_piece.global_position = space.global_position
+		selected_piece.global_position.y += 1.5
+		selected_piece.space_parent = space
+		space.is_filled = true
+		cycle_players()
 	else:
-		print("Not a valid click")
-	if selected_piece != null:
-		selected_piece.select_piece()
-		selected_piece = null
+		print("Not a valid move, deselecting all pieces")
+	deselect_all()
+	pass
+
+func check_if_space_one_removed_proper(space):
+	var in_neighbors = false
+	var correct_neighbor = null
+	for i in selected_space.neighbors:
+		if space in i.neighbors:
+			in_neighbors = true
+			correct_neighbor = i
+	if !in_neighbors:
+		return false
+	else:
+		if !correct_neighbor.is_filled:
+			return false
+		elif correct_neighbor.is_filled and selected_piece.space_parent.get_left_neighbor() == correct_neighbor and correct_neighbor.get_left_neighbor() == space:
+			return true
+		elif correct_neighbor.is_filled and selected_piece.space_parent.get_right_neighbor() == correct_neighbor and correct_neighbor.get_right_neighbor() == space:
+			return true
+		elif correct_neighbor.is_filled and selected_piece.space_parent.get_bottom_left_neighbor() == correct_neighbor and correct_neighbor.get_bottom_left_neighbor() == space:
+			return true
+		elif correct_neighbor.is_filled and selected_piece.space_parent.get_top_left_neighbor() == correct_neighbor and correct_neighbor.get_top_left_neighbor() == space:
+			return true
+		elif correct_neighbor.is_filled and selected_piece.space_parent.get_bottom_right_neighbor() == correct_neighbor and correct_neighbor.get_bottom_right_neighbor() == space:
+			return true
+		elif correct_neighbor.is_filled and selected_piece.space_parent.get_top_right_neighbor() == correct_neighbor and correct_neighbor.get_top_right_neighbor() == space:
+			return true
+		else:
+			return false
+	pass
+
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

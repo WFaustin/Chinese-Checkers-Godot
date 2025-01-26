@@ -5,6 +5,8 @@ var id : int
 @export var number : int
 @export var piece_mat : Material
 var player_pieces = []
+var starting_points = []
+var goal_points = []
 
 
 # Called when the node enters the scene tree for the first time.

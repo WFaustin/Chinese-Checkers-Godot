@@ -31,6 +31,7 @@ func _process(delta):
 func select_piece():
 	if !is_selected:
 		self.mesh.surface_set_material(0, filled)
+		get_node("Piece_Head").mesh.surface_set_material(0, filled)
 		#occupying_piece = piece.instantiate()
 		#add_child(occupying_piece)
 		#print(occupying_piece)
@@ -41,6 +42,7 @@ func select_piece():
 		#print(occupying_piece.position)
 	else:
 		self.mesh.surface_set_material(0, mat)
+		get_node("Piece_Head").mesh.surface_set_material(0, mat)
 		#if occupying_piece != null:
 		#	occupying_piece.queue_free()
 	is_selected = !is_selected

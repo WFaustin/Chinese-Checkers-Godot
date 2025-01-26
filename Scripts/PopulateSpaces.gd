@@ -50,12 +50,16 @@ func valid_top_left_neighbors(i,j):
 		return
 	elif i == 4 and j >= 5 and j <= 8:
 		pieces_array[i][j].neighbors.append(pieces_array[i-1][j-5])
+		pieces_array[i][j].top_left_neighbor = pieces_array[i-1][j-5]
 	elif i == 13:
 		pieces_array[i][j].neighbors.append(pieces_array[i-1][j+4])
+		pieces_array[i][j].top_left_neighbor = pieces_array[i-1][j+4]
 	elif (i >= 9 and i <= 12 and j != 0) or (i >= 1 and i <= 3 and j != 0):
 		pieces_array[i][j].neighbors.append(pieces_array[i-1][j-1])
+		pieces_array[i][j].top_left_neighbor = pieces_array[i-1][j-1]
 	else:
 		pieces_array[i][j].neighbors.append(pieces_array[i-1][j])
+		pieces_array[i][j].top_left_neighbor = pieces_array[i-1][j]
 	pass
 	
 func valid_top_right_neighbors(i,j):
@@ -69,12 +73,16 @@ func valid_top_right_neighbors(i,j):
 		return
 	elif i == 4 and j >= 4 and j < 8:
 		pieces_array[i][j].neighbors.append(pieces_array[i-1][j-4])
+		pieces_array[i][j].top_right_neighbor = pieces_array[i-1][j-4]
 	elif i == 13:
 		pieces_array[i][j].neighbors.append(pieces_array[i-1][j+5])
+		pieces_array[i][j].top_right_neighbor = pieces_array[i-1][j+5]
 	elif (i >= 9 and i <= 12 and j != len(pieces_array[i])-1) or (i >= 1 and i <= 3 and j != len(pieces_array[i])-1):
 		pieces_array[i][j].neighbors.append(pieces_array[i-1][j])
+		pieces_array[i][j].top_right_neighbor = pieces_array[i-1][j]
 	else:
 		pieces_array[i][j].neighbors.append(pieces_array[i-1][j+1])
+		pieces_array[i][j].top_right_neighbor = pieces_array[i-1][j+1]
 	pass
 
 func valid_top_neighbors(i, j):
@@ -89,6 +97,7 @@ func valid_left_neighbors(i, j):
 	else:
 		#print("left")
 		pieces_array[i][j].neighbors.append(pieces_array[i][j-1])
+		pieces_array[i][j].left_neighbor = pieces_array[i][j-1]
 	return
 	
 func valid_right_neighbors(i, j):
@@ -98,6 +107,7 @@ func valid_right_neighbors(i, j):
 	else:
 		#print("right")
 		pieces_array[i][j].neighbors.append(pieces_array[i][j+1])
+		pieces_array[i][j].right_neighbor = pieces_array[i][j+1]
 	return
 
 func valid_bottom_left_neighbors(i,j):
@@ -111,12 +121,16 @@ func valid_bottom_left_neighbors(i,j):
 		return
 	elif i == 12 and j >= 5 and j <= 8:
 		pieces_array[i][j].neighbors.append(pieces_array[i+1][j-5])
+		pieces_array[i][j].bottom_left_neighbor = pieces_array[i+1][j-5]
 	elif i == 3:
 		pieces_array[i][j].neighbors.append(pieces_array[i+1][j+4])
+		pieces_array[i][j].bottom_left_neighbor = pieces_array[i+1][j+4]
 	elif (i >= 4 and i <= 7 and j != 0) or (i >= 13 and i <= 16 and j != 0):
 		pieces_array[i][j].neighbors.append(pieces_array[i+1][j-1])
+		pieces_array[i][j].bottom_left_neighbor = pieces_array[i+1][j-1]
 	else:
 		pieces_array[i][j].neighbors.append(pieces_array[i+1][j])
+		pieces_array[i][j].bottom_left_neighbor = pieces_array[i+1][j]
 	pass
 	
 func valid_bottom_right_neighbors(i,j):
@@ -130,12 +144,16 @@ func valid_bottom_right_neighbors(i,j):
 		return
 	elif i == 12 and j >= 4 and j <= 7:
 		pieces_array[i][j].neighbors.append(pieces_array[i+1][j-4])
+		pieces_array[i][j].bottom_right_neighbor = pieces_array[i+1][j-4]
 	elif i == 3:
 		pieces_array[i][j].neighbors.append(pieces_array[i+1][j+5])
+		pieces_array[i][j].bottom_right_neighbor = pieces_array[i+1][j+5]
 	elif (i >= 4 and i <= 7 and j != len(pieces_array[i])-1) or (i >= 13 and i <= 16 and j != len(pieces_array[i])-1):
 		pieces_array[i][j].neighbors.append(pieces_array[i+1][j])
+		pieces_array[i][j].bottom_right_neighbor = pieces_array[i+1][j]
 	else:
 		pieces_array[i][j].neighbors.append(pieces_array[i+1][j+1])
+		pieces_array[i][j].bottom_right_neighbor = pieces_array[i+1][j+1]
 	pass
 	
 func valid_bottom_neighbors(i, j):

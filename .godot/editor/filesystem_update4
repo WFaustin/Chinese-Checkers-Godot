@@ -1,11 +1,11 @@
 res://Scenes/MainGame.tscn
-res://Assets/Materials/HighlightPiece.tres
 res://Assets/Materials/Player1Mat.tres
 res://Assets/Materials/Player2Mat.tres
-res://Assets/Materials/FilledSpaceMat.tres
 res://Assets/Player.tscn
 res://Assets/Space.tscn
 res://Assets/Piece.tscn
-res://Scripts/Space.gd
-res://Assets/Piece.gd
 res://Scripts/GameSetupAndRules.gd
+res://Scripts/Space.gd
+res://Scripts/PopulateSpaces.gd
+res://Scripts/Player.gd
+res://Assets/Materials/Player3Mat.tres

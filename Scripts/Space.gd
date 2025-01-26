@@ -11,6 +11,14 @@ var original_color = mesh.surface_get_material(0).albedo_color
 @export var is_selected : bool = false
 @export var occupying_piece : Node
 @export var neighbors = []
+var bottom_left_neighbor = null
+var bottom_right_neighbor = null
+var top_left_neighbor = null
+var top_right_neighbor = null
+var left_neighbor = null
+var right_neighbor = null
+
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -26,13 +34,32 @@ func _process(delta):
 func check_has_piece():
 	if get_child_count() > 1 and "Piece" in get_children()[1].name:
 		is_filled = true
+		occupying_piece = get_children()[1]
 		self.mesh.surface_set_material(0, filledmat)
 	else:
 		is_filled = false
+		occupying_piece = null
 		self.mesh.surface_set_material(0, basemat)
 	pass
 
 
+func get_top_left_neighbor():
+	return top_left_neighbor
+	
+func get_top_right_neighbor():
+	return top_right_neighbor
+
+func get_left_neighbor():
+	return left_neighbor
+	
+func get_right_neighbor():
+	return right_neighbor
+
+func get_bottom_left_neighbor():
+	return bottom_left_neighbor
+	
+func get_bottom_right_neighbor():
+	return bottom_right_neighbor
 
 func _on_static_body_3d_mouse_entered():
 	if !is_selected:
@@ -41,6 +68,7 @@ func _on_static_body_3d_mouse_entered():
 	pass # Replace with function body.
 
 func select_space():
+	#checks if false or true first, then changes the value to what it should be.
 	if !is_selected:
 		self.mesh.surface_set_material(0, selectedmat)
 		#occupying_piece = piece.instantiate()
@@ -52,10 +80,14 @@ func select_space():
 		print(self.position)
 		#print(occupying_piece.position)
 	else:
-		self.mesh.surface_set_material(0, basemat)
+		if is_filled:
+			self.mesh.surface_set_material(0, filledmat)
+		else:
+			self.mesh.surface_set_material(0, basemat)
 		#if occupying_piece != null:
 		#	occupying_piece.queue_free()
 	is_selected = !is_selected
+	check_has_piece()
 	print(neighbors)
 		
 
