@@ -12,26 +12,43 @@ var player_order = []
 var selected_piece
 var selected_space
 var jump_history = []
+var jump_potential = []
 var player_instance = preload("res://Assets/Player.tscn")
 var piece_instance = preload("res://Assets/Piece.tscn")
 var rng = RandomNumberGenerator.new()
 
 
-#var def_space = preload("res://Assets/Space.tscn")
+
+#Bugs happening: Need to restrict clicking to only jumpable spaces and current jumping piece if jumping is happening, causes bugs otherwise
+
+
+#Set-up, should be working correctly
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	spaces_ref = self.get_children()[0].get_children()[0]
 	spaces_ref.create_rows()
 	pieces_array = spaces_ref.pieces_array
 	connect_click_signal()
-	if num_players < 3:
-		num_players = 6
+	if num_players < 2:
+		num_players = 2
 	create_players()
 	choose_turn_order()
 	create_goal_spaces()
 	start_game()
 	#test_game()
 	pass # Replace with function body.
+
+func start_game():
+	for spaces in pieces_array:
+		for space in spaces:
+			space.check_has_piece()
+	turn()
+	pass
+
+func turn():
+	print(moving_player.name + "'s turn!")
 
 func connect_click_signal():
 	for spaces in pieces_array:
@@ -78,29 +95,7 @@ func test_game():
 			players[2].player_pieces[i].global_position = players[2].player_pieces[i].space_parent.global_position
 			players[2].player_pieces[i].global_position.y += 1.5
 	pass
-	
-func start_game():
-	for spaces in pieces_array:
-		for space in spaces:
-			space.check_has_piece()
-	turn()
-	pass
 
-func turn():
-	print(moving_player.name + "'s turn!")
-
-		
-	#Should be wincon check here
-
-#Do check win check at later point
-func check_win():
-	for i in moving_player.goal_points:
-		if !i.is_filled:
-			return false
-		elif i.occupying_piece.player != moving_player:
-			return false
-	print(moving_player.name + " wins!")
-	return true
 
 func create_players():
 	for num in range(0, num_players):
@@ -186,6 +181,9 @@ func propogate_spaces(player):
 	pass
 
 
+
+#Selection (somewhat working)
+
 func select_player_piece(piece):
 	if piece.player == moving_player:
 		if selected_piece == null:
@@ -198,7 +196,7 @@ func select_player_piece(piece):
 				selected_space.select_space()
 				selected_space = piece.space_parent
 			print(piece.name + " has been selected.")
-		elif selected_piece != null and piece != selected_piece:
+		elif piece != selected_piece and jump_potential.size() == 0:
 			selected_piece.select_piece() 
 			selected_space.select_space()
 			print(piece.name + " has been selected. " + selected_piece.name + " has been deselected.")
@@ -208,55 +206,40 @@ func select_player_piece(piece):
 			selected_piece = piece
 			piece.space_parent.select_space()
 			selected_space = piece.space_parent
-		elif selected_piece == piece:
+		elif selected_piece == piece and jump_potential.size() == 0:
 			piece.select_piece()
 			selected_piece = null
 			piece.space_parent.select_space()
 			selected_space = null
 			print(piece.name + " has been deselected.")
+		elif selected_piece == piece and jump_potential.size() > 0:
+			#jump potential for each space turned off
+			jumpable_highlight(jump_potential, false)
+			piece.select_piece()
+			selected_piece = null
+			piece.space_parent.select_space()
+			selected_space = null
+			end_continued_jump()
+			print(piece.name + " has been deselected and jump potential pieces reset. Moving to next player's turn")
+			if !check_win():
+				cycle_players()
+		elif selected_piece != piece and jump_potential.size() > 0:
+			print("Cannot click the piece: " + piece.name + " at this time. Selected piece " + selected_piece.name + " was the piece that started the jump sequence.")
 	elif piece.player != moving_player:
 		print("Please select one of your own pieces. That piece is a piece from: " + piece.player.name)
 	pass
-
-	
-#func select_player_piece(piece): #Original function, does not intend to use move logic
-#	if piece.player == moving_player:
-#		if selected_piece == null:
-#			piece.select_piece()
-#			selected_piece = piece
-#			#print(piece.name)
-#			piece.space_parent.select_space()
-#			#print(piece.space_parent.name)
-#			if selected_space == null:
-#				selected_space = piece.space_parent
-#			else:
-#				selected_space.select_space()
-#				selected_space = piece.space_parent
-#		elif selected_piece != null and piece != selected_piece:
-#			selected_piece.select_piece()
-#			selected_space.select_space()
-#			selected_piece = null
-#			selected_space = null
-#			piece.select_piece()
-#			selected_piece = piece
-#			piece.space_parent.select_space()
-#			selected_space = piece.space_parent
-#		elif selected_piece == piece:
-#			piece.select_piece()
-#			selected_piece = null
-#			piece.space_parent.select_space()
-#			selected_space = null
-#	elif piece.player != moving_player:
-#		print("Please select one of your own pieces. That piece is a piece from: " + piece.player.name)
-#	pass
 	
 	
 func select_player_space(is_filled, space):
 	if selected_piece != null:
-		if is_filled != true:
+		if is_filled != true and space.is_jumpable == false and jump_potential.size() == 0:
 			move_piece(space)
-			print("Move Piece")
-			return
+			print("Move Piece")	
+		elif is_filled != true and space.is_jumpable != false:
+			print("This should be the jump space code here")
+			move_piece(space)
+		elif is_filled != true and space.is_jumpable == false and jump_potential.size() > 0:
+			print(space.name + " cannot be moved to due to being in a jumping state. Please select a jumpable piece that is currently highlighted.")
 		else:
 			print("This space is filled currently. Please try again with another space.")
 	else:
@@ -275,32 +258,7 @@ func select_player_space(is_filled, space):
 			print(space.name + " has been deselected.")
 		else:
 			print("Not a valid click")
-	#if selected_piece != null:
-	#	selected_piece.select_piece()
-	#	if selected_piece.space_parent.is_selected:
-	#		selected_piece.space_parent.select_space()
-	#	selected_piece = null
 
-
-	
-#func select_player_space(is_filled, space): #Original function, does not plan on using move_piece function
-#	if selected_space == null and is_filled != true:
-#		space.select_space()
-#		selected_space = space
-#	elif selected_space != null and is_filled != true:
-#		selected_space.select_space()
-#		space.select_space()
-#		selected_space = space
-#	elif selected_space == space:
-#		space.select_space()
-#		selected_space = null
-#	else:
-#		print("Not a valid click")
-#	if selected_piece != null:
-#		selected_piece.select_piece()
-#		if selected_piece.space_parent.is_selected:
-#			selected_piece.space_parent.select_space()
-#		selected_piece = null
 
 
 func deselect_all():
@@ -315,11 +273,14 @@ func deselect_all():
 			selected_space.select_space()
 		selected_space = null
 	pass
+
+
+#Moving piece logic, good except for jumping
+
 	
 	
 func move_piece(space):
 	#refactor select_piece and select_space along with sensing player turn to not highlight other piece players to use this. 
-	jump_history = []
 	if selected_piece.player == moving_player and space in selected_piece.space_parent.neighbors and !space.is_filled:
 		selected_piece.space_parent.is_filled = false
 		selected_piece.space_parent.remove_child(selected_piece)
@@ -336,19 +297,13 @@ func move_piece(space):
 			cycle_players()
 	elif selected_piece.player == moving_player and check_if_space_one_removed_proper(space) and !space.is_filled:
 		print("HERE IS SKIPPING PIECES")
-		selected_piece.space_parent.is_filled = false
-		selected_piece.space_parent.remove_child(selected_piece)
-		selected_piece.space_parent.select_space()
-		selected_piece.space_parent = null
-		selected_space = null
-		space.add_child(selected_piece)
-		selected_piece.global_position = space.global_position
-		selected_piece.global_position.y += 1.5
-		selected_piece.space_parent = space
-		space.is_filled = true
-		space.check_has_piece()
-		if !check_win():
+		if jump_potential.size() > 0:
+			jumpable_highlight(jump_potential, false)
+		jump_move(space)
+		if !check_win() and jump_potential.size() == 0:
 			cycle_players()
+			deselect_all()
+		return
 	else:
 		print("Not a valid move, deselecting all pieces")
 	deselect_all()
@@ -383,13 +338,99 @@ func check_if_space_one_removed_proper(space):
 	pass
 
 
-func continued_jump_move():
-	#for i in selected_piece.space_parent.neighbors:
-	#	if i 
+
+
+#Jumping piece logic (needs to be debugged)
+
+
+func jump_move(space):
+	if selected_piece.space_parent not in jump_history:
+		jump_history.append(selected_piece.space_parent)
+	selected_piece.space_parent.is_filled = false
+	selected_piece.space_parent.remove_child(selected_piece)
+	selected_piece.space_parent.select_space()
+	selected_piece.space_parent = null
+	selected_space = null
+	space.add_child(selected_piece)
+	selected_piece.global_position = space.global_position
+	selected_piece.global_position.y += 1.5
+	selected_piece.space_parent = space
+	space.is_filled = true
+	selected_space = space
+	space.check_has_piece()
+	space.select_space()
+	jump_history.append(space)
+	continued_jump_move()
 	pass
 
-func find_other_non_dups_to_jump_to():
+func continued_jump_move():
+	jump_potential = find_other_non_dups_to_jump_to()
+	if jump_potential.size() == 0:
+		print("No other pieces to jump to, deselect all pieces and spaces and continue")
+		end_continued_jump()
+		#unhighlight jumpables here again in case
+	else:
+		print("Other pieces to jump to, highlight all possible spaces to jump to. If spaces not clicked, deselect all pieces and continue.")
+		#highlight jump spaces here
+		jumpable_highlight(jump_potential, true)
 	pass
+
+func end_continued_jump():
+	jump_history = []
+	jumpable_highlight(jump_potential, false)
+	jump_potential = []
+	deselect_all()
+
+func in_line_neighbor_logic(space):
+	#make null check for each
+	var list_of_eligible_pieces = []
+	if space.get_left_neighbor() != null and !space.get_left_neighbor().is_filled and selected_piece.space_parent.get_left_neighbor() == space and space.get_left_neighbor() not in jump_history:
+		list_of_eligible_pieces.append(space.get_left_neighbor())
+	if space.get_right_neighbor() != null and !space.get_right_neighbor().is_filled and selected_piece.space_parent.get_right_neighbor() == space and space.get_right_neighbor() not in jump_history:
+		list_of_eligible_pieces.append(space.get_right_neighbor())
+	if space.get_top_left_neighbor() != null and !space.get_top_left_neighbor().is_filled and selected_piece.space_parent.get_top_left_neighbor() == space and space.get_top_left_neighbor() not in jump_history:
+		list_of_eligible_pieces.append(space.get_top_left_neighbor())
+	if space.get_top_right_neighbor() != null and !space.get_top_right_neighbor().is_filled and selected_piece.space_parent.get_top_right_neighbor() == space and space.get_top_right_neighbor() not in jump_history:
+		list_of_eligible_pieces.append(space.get_top_right_neighbor())
+	if space.get_bottom_left_neighbor() != null and !space.get_bottom_left_neighbor().is_filled and selected_piece.space_parent.get_bottom_left_neighbor() == space and space.get_bottom_left_neighbor() not in jump_history:
+		list_of_eligible_pieces.append(space.get_bottom_left_neighbor())
+	if space.get_bottom_right_neighbor() != null and !space.get_bottom_right_neighbor().is_filled and selected_piece.space_parent.get_bottom_right_neighbor() == space and space.get_bottom_right_neighbor() not in jump_history:
+		list_of_eligible_pieces.append(space.get_bottom_right_neighbor())
+	return list_of_eligible_pieces if list_of_eligible_pieces.size() > 0 else null
+	pass
+
+
+func jumpable_highlight(spaces, toggle=false):
+	for i in spaces:
+		i.toggle_jump(toggle) if i.is_jumpable != toggle else print("No toggle")
+
+func find_other_non_dups_to_jump_to():
+	var possible_jump_spaces = []
+	for neighbor in selected_piece.space_parent.neighbors:
+		if neighbor.is_filled:
+			var result = in_line_neighbor_logic(neighbor)
+			if result != null:
+				print(result)
+				possible_jump_spaces.append_array(result) 
+			else:
+				print("No eligible pieces to return.")
+	return possible_jump_spaces
+	pass
+
+
+#WIn checking seems to be worrking, but will need to spring up menus
+
+#Do check win check at later point
+func check_win():
+	for i in moving_player.goal_points:
+		if !i.is_filled:
+			return false
+		elif i.occupying_piece.player != moving_player:
+			return false
+	print(moving_player.name + " wins!")
+	return true
+
+
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):

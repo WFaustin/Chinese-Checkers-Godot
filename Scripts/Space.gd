@@ -1,3 +1,4 @@
+class_name Space
 extends MeshInstance3D
 var basemat = preload("res://Assets/Materials/BaseSpaceMat.tres")
 var hovermat = preload("res://Assets/Materials/HoverSpaceMat.tres")
@@ -32,12 +33,16 @@ func _process(delta):
 	#check_has_piece()
 	pass
 
+func toggle_jump(val):
+	is_jumpable = val
+	toggle_jumpable_color()
 
 func toggle_jumpable_color():
 	if is_jumpable:
 		self.mesh.surface_set_material(0, jumpablemat)
 	else:
 		check_has_piece()
+
 
 func check_has_piece():
 	if get_child_count() > 1 and "Piece" in get_children()[1].name:
@@ -106,6 +111,7 @@ func select_space():
 func _on_static_body_3d_mouse_exited():
 	if !is_selected:
 		check_has_piece()
+	toggle_jumpable_color()
 		#self.mesh.surface_get_material(0).albedo_color = original_color
 	pass # Replace with function body.
 
